@@ -47,7 +47,7 @@ public class ProfessorAudio : MonoBehaviour
     {
         if (!isRecording) yield break;
 
-        buttonText.text = "Start Recording";
+        buttonText.text = "Loading...";
         Microphone.End(microphoneDevice);
         isRecording = false;
         Debug.Log("recording stopped");
@@ -82,8 +82,11 @@ public class ProfessorAudio : MonoBehaviour
                 Debug.Log("HERE BYRON");
                 StartCoroutine(DownloadAudioClip("https://easy-fly-cleanly.ngrok-free.app/static/speech.mp3"));
                 //Debug.Log("after the call");
+
+
             }
         }
+        buttonText.text = "Ask for Help";
 
     }
 

@@ -50,7 +50,7 @@ public class AudioRecorder : MonoBehaviour
     {
         if (!isRecording) yield break;
 
-        buttonText.text = "Start Recording";
+        buttonText.text = "Loading...";
         Microphone.End(microphoneDevice);
         isRecording = false;
         Debug.Log("recording stopped");
@@ -118,6 +118,7 @@ public class AudioRecorder : MonoBehaviour
                 }
             }
         }
+        buttonText.text = "Start Recording";
 
     }
 
