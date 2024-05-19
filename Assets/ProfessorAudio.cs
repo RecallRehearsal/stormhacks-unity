@@ -7,7 +7,7 @@ using TMPro;
 using UnityEngine.Networking;
 using System;
 
-public class AudioRecorder : MonoBehaviour
+public class ProfessorAudio : MonoBehaviour
 {
     private bool isRecording = false;
     private AudioClip recording;
@@ -15,9 +15,7 @@ public class AudioRecorder : MonoBehaviour
 
     public Button recordButton;
     public TextMeshProUGUI buttonText;
-    public AudioSource audioSource;
     public AudioSource audioSource2;
-    //private ApiManager apiManager;
 
     // Start is called before the first frame update
     void Start()
@@ -35,7 +33,6 @@ public class AudioRecorder : MonoBehaviour
 
     public void ToggleRecording()
     {
-        GlobalManager.Instance.SetGettingHelp(false);
         if (isRecording)
         {
             StartCoroutine(StopRecording());
@@ -55,8 +52,6 @@ public class AudioRecorder : MonoBehaviour
         isRecording = false;
         Debug.Log("recording stopped");
 
-        //PlayRecording();
-
         byte[] wavData = AudioClipToWAV(recording);
 
         List<IMultipartFormSection> formData = new List<IMultipartFormSection>
@@ -65,7 +60,7 @@ public class AudioRecorder : MonoBehaviour
         };
 
         // endpoint info
-        string url = "https://easy-fly-cleanly.ngrok-free.app/processAnswer";
+        string url = "https://easy-fly-cleanly.ngrok-free.app/getHelp";
         Debug.Log("URL IS " + url + " before the req");
 
         //using (UnityWebRequest webRequest = UnityWebRequest.Get(url))
@@ -87,35 +82,6 @@ public class AudioRecorder : MonoBehaviour
                 Debug.Log("HERE BYRON");
                 StartCoroutine(DownloadAudioClip("https://easy-fly-cleanly.ngrok-free.app/static/speech.mp3"));
                 //Debug.Log("after the call");
-
-                string jsonResponse = webRequest.downloadHandler.text;
-                Debug.Log("Response JSON: " + jsonResponse);
-
-                // Deserialize JSON to LearningGoalsWrapper
-                ProcessedResult res = null;
-                try
-                {
-                    res = JsonUtility.FromJson<ProcessedResult>(jsonResponse);
-                }
-                catch (System.Exception ex)
-                {
-                    Debug.LogError("Error parsing JSON: " + ex.Message);
-                }
-
-                Debug.Log(res.correctness + " is correctness");
-                if (res.correctness > 60)
-                {
-                    if (GlobalManager.Instance.questionCounter > 4)
-                    {
-                        GlobalManager.Instance.questionCounter = 0;
-                        GlobalManager.Instance.learningGoalCounter++;
-                    }
-                    else
-                    {
-                        GlobalManager.Instance.questionCounter++;
-                    }
-                    GlobalManager.Instance.correct = true;
-                }
             }
         }
 
@@ -146,17 +112,11 @@ public class AudioRecorder : MonoBehaviour
                     Debug.Log("the thing PLAYS");
                     audioSource2.Play();
                     Debug.Log("AFTER AFTER");
-                    
+
                     //GlobalManager.Instance.apiManager.FetchQuestion();
                 }
             }
         }
-    }
-
-    [System.Serializable]
-    public class ProcessedResult
-    {
-        public int correctness;
     }
 
     // overriding our certificate class
@@ -181,25 +141,6 @@ public class AudioRecorder : MonoBehaviour
         recording = Microphone.Start(microphoneDevice, true, 20, 44100);
         isRecording = true;
         Debug.Log("Recording started...");
-    }
-
-    void PlayRecording()
-    {
-        if (recording == null)
-        {
-            Debug.Log("no recording to play");
-            return;
-        }
-
-        audioSource.clip = recording;
-        audioSource.Play();
-    }
-
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 
     // generate a wav file from an audio clip

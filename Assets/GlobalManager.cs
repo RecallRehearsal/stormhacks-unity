@@ -15,6 +15,7 @@ public class GlobalManager : MonoBehaviour
     public int questionCounter;
     public int learningGoalCounter;
     public bool correct;
+    public bool gettingHelp;
     public LearningGoals learningGoals;
     [SerializeField]
     public AudioSource voice;
@@ -41,6 +42,7 @@ public class GlobalManager : MonoBehaviour
             this.questionCounter = 0;
             this.learningGoalCounter = 0;
             this.correct = false;
+            this.gettingHelp = false;
             SetActiveSpeaker(0);
             Debug.Log(voice);
             apiManager = gameObject.AddComponent<ApiManager>();
@@ -76,6 +78,11 @@ public class GlobalManager : MonoBehaviour
         this.correct = val;
     }
 
+    public void SetGettingHelp(bool val)
+    {
+        this.gettingHelp = val;
+    }
+
     public void PrintMessage()
     {
         if (learningGoals != null)
@@ -90,14 +97,22 @@ public class GlobalManager : MonoBehaviour
 
     void Update()
     {
-        if (questionCounter < 2)
+        if (gettingHelp)
         {
-            SetActiveSpeaker(0);
+            SetActiveSpeaker(2);
         }
         else
         {
-            SetActiveSpeaker(1);
+            if (questionCounter < 2)
+            {
+                SetActiveSpeaker(0);
+            }
+            else
+            {
+                SetActiveSpeaker(1);
         }
+        }
+        
 
         if (this.correct)
         {
