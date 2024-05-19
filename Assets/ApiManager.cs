@@ -68,6 +68,11 @@ public class ApiManager : MonoBehaviour
         }
     }
 
+    public void StartGame()
+    {
+        FetchQuestion();
+    }
+
     private IEnumerator GetLearningGoals()
     {
         using (UnityWebRequest webRequest = UnityWebRequest.Get(apiUrl))
@@ -166,7 +171,6 @@ public class ApiManager : MonoBehaviour
 
                 // Optionally print the learning goals to verify
                 //GlobalManager.Instance.PrintMessage();
-                FetchQuestion();
             }
         }
     }

@@ -47,6 +47,9 @@ public class GlobalManager : MonoBehaviour
             Debug.Log(voice);
             apiManager = gameObject.AddComponent<ApiManager>();
             apiManager.audioSource = voice;
+
+            StartCoroutine(PlayIntroDialog());
+            // goes here
             apiManager.FetchLearningGoals();
             //Debug.Log("right before the fetching");
             //apiManager.FetchFirstQuestion();
@@ -55,6 +58,60 @@ public class GlobalManager : MonoBehaviour
         {
             // If an instance already exists, destroy this new one
             Destroy(gameObject);
+        }
+    }
+
+    private IEnumerator PlayIntroDialog()
+    {
+        string url = "https://easy-fly-cleanly.ngrok-free.app/generateIntro";
+        using (UnityWebRequest webRequest = UnityWebRequest.Get(url))
+        {
+            webRequest.SetRequestHeader("ngrok-skip-browser-warning", "true");
+            //webRequest.certificateHandler = new BypassCertificate();
+
+            Debug.Log("sent");
+            yield return webRequest.SendWebRequest();
+
+            if (webRequest.result == UnityWebRequest.Result.ConnectionError || webRequest.result == UnityWebRequest.Result.ProtocolError)
+            {
+                Debug.Log("Error: " + webRequest.error);
+            }
+            else
+            {
+                Debug.Log("Status Code of GET FIRST: " + webRequest.responseCode);
+                StartCoroutine(DownloadAudioClip("https://easy-fly-cleanly.ngrok-free.app/static/speech.mp3"));
+            }
+        }
+    }
+
+    public void StartGame()
+    {
+        apiManager.StartGame();
+    }
+
+    IEnumerator DownloadAudioClip(string url)
+    {
+        using (UnityWebRequest audioRequest = UnityWebRequestMultimedia.GetAudioClip(url, AudioType.MPEG))
+        {
+            yield return audioRequest.SendWebRequest();
+
+            if (audioRequest.result == UnityWebRequest.Result.ConnectionError || audioRequest.result == UnityWebRequest.Result.ProtocolError)
+            {
+                Debug.LogError("Error: " + audioRequest.error);
+            }
+            else
+            {
+                AudioClip audioClip = DownloadHandlerAudioClip.GetContent(audioRequest);
+                if (audioClip == null)
+                {
+                    Debug.LogError("Failed to download audio clip.");
+                }
+                else
+                {
+                    voice.clip = audioClip;
+                    voice.Play();
+                }
+            }
         }
     }
 
