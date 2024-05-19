@@ -17,7 +17,9 @@ public class GlobalManager : MonoBehaviour
     public bool correct;
     public LearningGoals learningGoals;
     [SerializeField]
-    public AudioSource[] voices;
+    public AudioSource voice;
+    [SerializeField]
+    public GameObject[] lights;
     public Button correctButton;
 
     public ApiManager apiManager;
@@ -39,8 +41,10 @@ public class GlobalManager : MonoBehaviour
             this.questionCounter = 0;
             this.learningGoalCounter = 0;
             this.correct = false;
+            SetActiveSpeaker(0);
+            Debug.Log(voice);
             apiManager = gameObject.AddComponent<ApiManager>();
-            apiManager.audioSource = voices[0];
+            apiManager.audioSource = voice;
             apiManager.FetchLearningGoals();
             //Debug.Log("right before the fetching");
             //apiManager.FetchFirstQuestion();
@@ -49,6 +53,20 @@ public class GlobalManager : MonoBehaviour
         {
             // If an instance already exists, destroy this new one
             Destroy(gameObject);
+        }
+    }
+
+    public void SetActiveSpeaker(int index)
+    {
+        for (int i = 0; i<3; i++)
+        {
+            if (i == index)
+            {
+                lights[i].SetActive(true);
+            } else
+            {
+                lights[i].SetActive(false);
+            }
         }
     }
 
@@ -72,6 +90,15 @@ public class GlobalManager : MonoBehaviour
 
     void Update()
     {
+        if (questionCounter < 2)
+        {
+            SetActiveSpeaker(0);
+        }
+        else
+        {
+            SetActiveSpeaker(1);
+        }
+
         if (this.correct)
         {
             correctButton.gameObject.SetActive(true);
