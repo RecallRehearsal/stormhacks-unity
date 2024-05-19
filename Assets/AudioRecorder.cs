@@ -17,6 +17,7 @@ public class AudioRecorder : MonoBehaviour
     public TextMeshProUGUI buttonText;
     public AudioSource audioSource;
     public AudioSource audioSource2;
+    //private ApiManager apiManager;
 
     // Start is called before the first frame update
     void Start()
@@ -29,38 +30,6 @@ public class AudioRecorder : MonoBehaviour
         else
         {
             Debug.Log("No microphone devices found");
-        }
-        Debug.Log("sent");
-        StartCoroutine(TestSend());
-    }
-
-
-    IEnumerator TestSend()
-    {
-        string url = "https://easy-fly-cleanly.ngrok-free.app/healthCheck";
-        Debug.Log("URL IS " + url + " before the req");
-
-        using (UnityWebRequest webRequest = UnityWebRequest.Get(url))
-        //using (UnityWebRequest webRequest = UnityWebRequest.Post(url, formData))
-        {
-            webRequest.SetRequestHeader("ngrok-skip-browser-warning", "true");
-            webRequest.SetRequestHeader("Accept", "application/json");
-            webRequest.SetRequestHeader("Content-Type", "application/json");
-            webRequest.certificateHandler = new BypassCertificate();
-
-            yield return webRequest.SendWebRequest();
-
-            if (webRequest.result == UnityWebRequest.Result.ConnectionError || webRequest.result == UnityWebRequest.Result.ProtocolError)
-            {
-                Debug.Log("Error: " + webRequest.error);
-            }
-            else
-            {
-                Debug.Log("Status Code: " + webRequest.responseCode);
-                Debug.Log("HERE BYRON");
-                string response = webRequest.downloadHandler.text;
-                Debug.Log("Response JSON: " + response);
-            }
         }
     }
 
@@ -85,7 +54,7 @@ public class AudioRecorder : MonoBehaviour
         isRecording = false;
         Debug.Log("recording stopped");
 
-        PlayRecording();
+        //PlayRecording();
 
         byte[] wavData = AudioClipToWAV(recording);
 
@@ -116,6 +85,36 @@ public class AudioRecorder : MonoBehaviour
                 Debug.Log("Status Code: " + webRequest.responseCode);
                 Debug.Log("HERE BYRON");
                 StartCoroutine(DownloadAudioClip("https://easy-fly-cleanly.ngrok-free.app/static/speech.mp3"));
+                //Debug.Log("after the call");
+
+                string jsonResponse = webRequest.downloadHandler.text;
+                Debug.Log("Response JSON: " + jsonResponse);
+
+                // Deserialize JSON to LearningGoalsWrapper
+                ProcessedResult res = null;
+                try
+                {
+                    res = JsonUtility.FromJson<ProcessedResult>(jsonResponse);
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError("Error parsing JSON: " + ex.Message);
+                }
+
+                Debug.Log(res.correctness + " is correctness");
+                if (res.correctness > 60)
+                {
+                    if (GlobalManager.Instance.questionCounter > 4)
+                    {
+                        GlobalManager.Instance.questionCounter = 0;
+                        GlobalManager.Instance.learningGoalCounter++;
+                    }
+                    else
+                    {
+                        GlobalManager.Instance.questionCounter++;
+                    }
+                    GlobalManager.Instance.correct = true;
+                }
             }
         }
 
@@ -143,10 +142,20 @@ public class AudioRecorder : MonoBehaviour
                 else
                 {
                     audioSource2.clip = audioClip;
+                    Debug.Log("the thing PLAYS");
                     audioSource2.Play();
+                    Debug.Log("AFTER AFTER");
+                    
+                    //GlobalManager.Instance.apiManager.FetchQuestion();
                 }
             }
         }
+    }
+
+    [System.Serializable]
+    public class ProcessedResult
+    {
+        public int correctness;
     }
 
     // overriding our certificate class
@@ -182,9 +191,7 @@ public class AudioRecorder : MonoBehaviour
         }
 
         audioSource.clip = recording;
-        Debug.Log("right before playing");
         audioSource.Play();
-        Debug.Log("after playing");
     }
 
 
